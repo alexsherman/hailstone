@@ -1,0 +1,54 @@
+body {
+  background-color: black;
+}
+
+#container {
+  color: white;
+  margin: 0 auto;
+  margin-top: 10px;
+  text-align: center;
+  font-family: "Audiowide";
+}
+
+#graphic_area {
+  margin: 0 auto;
+}
+
+#rectangle {
+   
+}
+
+#number_list {
+  padding-top: 20px;
+  font-size: 16px;
+  color: red;
+  height: 50px;
+  font-family: "Teko";
+  text-align: left;
+  overflow: auto;
+}
+
+button {
+  background-color: gray;
+  border-color: gray;
+  padding: 5px;
+  width: 100px;
+  font-family: "Audiowide";
+  transition: .3s;
+  margin-right: 10px;
+}
+
+button:hover {
+  cursor: pointer;
+  border-color: black;
+}
+
+#controls {
+  border-top: 2px solid gray;
+  padding-top: 7px;
+}
+
+#about {
+  display: none;
+  font-family: "Source Code Pro";
+}
