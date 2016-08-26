@@ -7,46 +7,47 @@
   //12331
   //12778
   //19587
-  var startNum;
-  var num;
-  var ticked = true;
+  let startNum;
+  let num;
+  let ticked = true;
 
-  var speed = 150;
-  var release = .5;
-  var waveType = "sine";
-  var maxVolume = .04;
-  var speedCoefficient = 75;
-  var releaseCoefficient = 5;
-  var numberDiv = d3.select("#number_list");
-  var svg_area;
+  let speed = 150;
+  let release = .5;
+  let waveType = "sine";
+  let maxVolume = .04;
+  let speedCoefficient = 75;
+  let releaseCoefficient = 5;
+  let numberDiv = d3.select("#number_list");
+  let svg_area;
 
-  var rHeight = 250;
-  var width = 1200;
-  var height = 500;
-  var oldX = width / 2;
-  var oldY = height / 2;
+
+  let rHeight = 250;
+  let width = 1200;
+  let height = 500;
+  let oldX = width / 2;
+  let oldY = height / 2;
+  let currentStart = [width/2, 1];
+  let currentEnd = [0,0];
+  let ratio;
 
   function createSvgArea() {
     //Add the svg area
     return d3.select("#graphic_area").append("svg")
         .attr("id", "svg_area")
-        .attr("width", width +"px")
+        .attr("width", width + "px")
         .attr("height", height + "px")
   }
 
     svg_area = createSvgArea();
-    svg_area.append("rect")
-      .attr("id", "rectangle")
-        .style("fill", "#e6e6e6");
 
   //change speed
   $('#speed').change(function() {
-    var val = ($('#speed').val() != 0) ? $('#speed').val() : 1
+    let val = ($('#speed').val() != 0) ? $('#speed').val() : 1
     speed = (speedCoefficient / val) * speedCoefficient;
   })
   //change release time
   $('#release').change(function() {
-    var val = ($('#release').val() != 0) ? $('#release').val() : 1
+    let val = ($('#release').val() != 0) ? $('#release').val() : 1
     release = (val / speedCoefficient) * releaseCoefficient;
   })
   $('#hailstone').click(function() {hailstoneHelper(); })
@@ -56,7 +57,7 @@
   $('#switch_triangle').click(function() {switchTo('triangle');})
 
   // initialize audio context
-  var context;
+  let context;
   window.addEventListener('load', init, false);
   function init() {
     try {
@@ -72,16 +73,16 @@
   //does exactly that
   function playSound(frequency, osctype) {
 
-    var osc = context.createOscillator();
+    let osc = context.createOscillator();
     osc.frequency.value = frequency;
     osc.type = osctype;
 
 
-    var waveArray = new Float32Array(2);
+    let waveArray = new Float32Array(2);
     waveArray[0] = maxVolume;
     waveArray[1] = 0;
 
-    var gainNode = context.createGain();
+    let gainNode = context.createGain();
     osc.connect(gainNode);
     gainNode.connect(context.destination)
     gainNode.gain.setValueCurveAtTime(waveArray, context.currentTime, release);
@@ -89,18 +90,38 @@
     osc.stop(context.currentTime + release);
   }
 
+  function maxValOfSequence(val) {
+    let max = val;
+    while (val != 1) {
+      if (val % 2 != 1) {
+        val /= 2;
+      } else {
+        val *= 3;
+        val += 1;
+      }
+      if (val > max) max = val;
+    }
+
+    return max;
+  }
+
   // checks if number inputted > 0, is number, isn't stupid big
   function hailstoneHelper() {
-    var val;
+    let val;
     if (!isNaN($('#startNumber').val()) && $('#startNumber').val() > 0 && $('#startNumber').val() < 1000000) {
       val = $('#startNumber').val();
       startNum = val;
       num = val
 
+      let maxVal = maxValOfSequence(val);
+
       ticked = !ticked;
 
       numberDiv.text(val + "-> ");
       //call recursive method
+      ratio = height / maxVal;
+      currentStart = [width / 2, height - (val * ratio)];
+      currentEnd = currentStart;
       hailstone();
     } else {
       $('#startNumber').val("Please enter a valid number!");
@@ -115,7 +136,7 @@
     }
 
     // because laptop speakers can only produce a certain range (and humans can only hear a certain range), shifts pitches so they are hearable and playable
-    var adjustedNum = num;
+    let adjustedNum = num;
     if (num < 100 && num > 40) {
       adjustedNum *= 4;
       playSound(adjustedNum, waveType);
@@ -125,7 +146,6 @@
     } else if (num > 15000) {
       while(adjustedNum > 15000) {
         adjustedNum /= 2;
-        console.log(adjustedNum);
       }
         playSound(adjustedNum, waveType);
     } else {
@@ -134,37 +154,38 @@
 
       if (num % 2 != 1) {
         num /= 2;
+        let newCoord = currentEnd[1] + (height - currentEnd[1]) / 2;
+        currentEnd = [Math.random() * width, newCoord];
       } else {
         num *= 3;
         num += 1;
+        let newCoord = currentEnd[1] - (2 * (height - currentEnd[1]));
+        currentEnd = [Math.random() * width, newCoord];
       }
-      var ndHtml = numberDiv.text();
+
+      let ndHtml = numberDiv.text();
       ndHtml += num + ", ";
       numberDiv.text(ndHtml);
 
-      if (waveType == "sine") {
+    svg_area.append("line")
+      .attr("x1", currentStart[0])
+      .attr("y1", currentStart[1])
+      .attr("x2", currentStart[0])
+      .attr("y2", currentStart[1])
+      .transition()
+      .attr("x2", currentEnd[0])
+      .attr("y2", currentEnd[1])
+      .attr("stroke", "black")
+      .attr("stroke-width", "2px");
 
-      } else if (waveType == "square") {
-        d3.select("#rectangle").style("transition", speed / 700 + "s")
-          .attr("height", (rHeight / startNum) * num + "px")
-          .attr("width", (300 / startNum) * num + "px")
-
-           oldX = +d3.select("#rectangle").attr("width").replace("px", "")
-           oldY = +d3.select("#rectangle").attr("height").replace("px", "");
-
-          d3.select("#rectangle").attr("x", width / 2 - oldX / 2)
-          .attr("y", height / 2 - oldY / 2)
-          .attr("transition", speed/200 + "s")
-          .style("stroke", function() {
-             return "hsl(" + Math.random() * 360 + ",100%,50%)";
-          });
-
-      } else if (waveType == "triangle") {
-
+    d3.selectAll("line").each(function(d,i) {
+      let currentOpacity = d3.select(this).style("opacity");
+      if (currentOpacity != 0) {
+        d3.select(this).style("opacity", currentOpacity - .1);
       }
+    })
 
-
-
+      currentStart = currentEnd;
       if (num > 1) window.setTimeout(hailstone, speed);
   }
 
@@ -179,7 +200,7 @@
 
   function switchTo(newWaveType) {
      waveType = newWaveType;
-     var id = "switch_" + waveType;
+     let id = "switch_" + waveType;
      d3.selectAll(".waveSelection").style("background-color", "blue");
      d3.select("#" + id).style("background-color", "red");
   }
