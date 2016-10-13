@@ -1,3 +1,8 @@
+// to do:
+//make fucking zoom actually work
+// get zoom to follow the hailstone path roughly
+// maybe make width dependent on length of line being traveled?
+
 (function() {
   //Numbers I like the sound of:
   //440
@@ -185,9 +190,11 @@
       }
     })
 
+      //add zoom https://jsfiddle.net/2yx1cLrq/
       currentStart = currentEnd;
       if (num > 1) window.setTimeout(hailstone, speed);
   }
+
 
   function about() {
     if (d3.select("#about").style("display") == "none") {
