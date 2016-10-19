@@ -24,16 +24,17 @@
   let releaseCoefficient = 5;
   let numberDiv = d3.select("#number_list");
   let svg_area;
-
+  let stone;
 
   let rHeight = 250;
-  let width = 1200;
-  let height = 500;
+  let width = window.innerWidth;
+  let height = window.innerHeight * 4 / 5;
   let oldX = width / 2;
   let oldY = height / 2;
   let currentStart = [width/2, 1];
   let currentEnd = [0,0];
   let ratio;
+  let maxVal;
 
   function createSvgArea() {
     //Add the svg area
@@ -43,7 +44,16 @@
         .attr("height", height + "px")
   }
 
+  function createStone() {
+    return d3.select("#svg_area").append("circle")
+      .attr("id", "stone")
+      .attr("r", "5")
+      .attr("color", "black");
+  }
+
     svg_area = createSvgArea();
+    stone = createStone();
+
 
   //change speed
   $('#speed').change(function() {
@@ -60,6 +70,15 @@
   $('#switch_sine').click(function() {switchTo('sine');})
   $('#switch_square').click(function() {switchTo('square');})
   $('#switch_triangle').click(function() {switchTo('triangle');})
+
+  let zoom = d3.zoom()
+      .on('zoom', zoomed);
+  svg_area.call(zoom);
+
+  function zoomed() {
+
+  }
+
 
   // initialize audio context
   let context;
@@ -118,7 +137,7 @@
       startNum = val;
       num = val
 
-      let maxVal = maxValOfSequence(val);
+      maxVal = maxValOfSequence(val);
 
       ticked = !ticked;
 
@@ -135,6 +154,7 @@
 
   //recursively runs through hailstone sequence based on startnumber and calls playSound for each frequency
   function hailstone() {
+    stone.style("display", "block");
     if (!ticked) {
       num = startNum;
       ticked = true;
@@ -172,27 +192,44 @@
       ndHtml += num + ", ";
       numberDiv.text(ndHtml);
 
+
+
+    stone.transition().duration(speed).attr("cx", currentEnd[0])
+      .attr("cy", currentEnd[1]);
+
     svg_area.append("line")
       .attr("x1", currentStart[0])
       .attr("y1", currentStart[1])
       .attr("x2", currentStart[0])
       .attr("y2", currentStart[1])
       .transition()
+      .duration(speed)
       .attr("x2", currentEnd[0])
       .attr("y2", currentEnd[1])
       .attr("stroke", "black")
-      .attr("stroke-width", "2px");
+      .attr("stroke-width", "2px")
+      .transition()
+      .duration(speed * 20)
+      .style("opacity", 0);
+
+
 
     d3.selectAll("line").each(function(d,i) {
       let currentOpacity = d3.select(this).style("opacity");
-      if (currentOpacity != 0) {
-        d3.select(this).style("opacity", currentOpacity - .1);
+      if (currentOpacity < 1) {
+          d3.select(this).attr("stroke-dasharray", "5,5");
       }
     })
 
+  //  d3.selectAll("line").transition().duration(10).attr("transform", "translate(" + [10, 10] + ")");
+
       //add zoom https://jsfiddle.net/2yx1cLrq/
       currentStart = currentEnd;
-      if (num > 1) window.setTimeout(hailstone, speed);
+      if (num > 1) {
+        window.setTimeout(hailstone, speed);
+      } else {
+        stone.style("display", "none");
+      }
   }
 
 
@@ -201,6 +238,7 @@
       d3.select("#about").style("display", "block");
       $("html, body").animate({ scrollTop: $(document).height() }, 500)
     } else {
+      backgroundAnimation();
       d3.select("#about").style("display", "none");
     }
   }
@@ -211,5 +249,4 @@
      d3.selectAll(".waveSelection").style("background-color", "blue");
      d3.select("#" + id).style("background-color", "red");
   }
-
 })();

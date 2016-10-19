@@ -11,6 +11,24 @@ a:hover {
 
 }
 
+#cloud-scroll {
+width: 200px;
+height: 200px;
+background: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/130527/clouds-full.png);
+-webkit-animation: backgroundScroll 20s linear infinite;
+animation: backgroundScroll 20s linear infinite;
+}
+
+@-webkit-keyframes backgroundScroll {
+from {background-position: 0 0;}
+to {background-position: -400px 0;}
+}
+
+@keyframes backgroundScroll {
+from {background-position: 0 0;}
+to {background-position: -400px 0;}
+}
+
 #container {
   color: black;
   margin: 0 auto;
@@ -21,6 +39,14 @@ a:hover {
 
 #graphic_area {
   margin: 0 auto;
+
+}
+
+#svg_area {
+  background: url(hail.jpg);
+  background-color:rgba(0, 0, 0, 0.5);
+  -webkit-animation: backgroundScroll 20s linear infinite;
+  animation: backgroundScroll 20s linear infinite;
 }
 
 #rectangle {
