@@ -10,17 +10,56 @@ a {
 a:hover {
 
 }
+
+#cloud-scroll {
+width: 200px;
+height: 200px;
+background: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/130527/clouds-full.png);
+-webkit-animation: backgroundScroll 20s linear infinite;
+animation: backgroundScroll 20s linear infinite;
+}
+
+@-webkit-keyframes backgroundScroll {
+from {background-position: 0 0;}
+to {background-position: -400px 0;}
+}
+
+@keyframes backgroundScroll {
+from {background-position: 0 0;}
+to {background-position: -400px 0;}
+}
+
 #container {
   color: black;
   margin: 0 auto;
+  margin-top: 10px;
   text-align: center;
   font-family: "Raleway";
 }
 
 #graphic_area {
   margin: 0 auto;
-  overflow-y: visible;
-  overflow-x: hidden;
+
+}
+
+#svg_area {
+  background: url(hail.jpg);
+  background-color:rgba(0, 0, 0, 0.5);
+  -webkit-animation: backgroundScroll 20s linear infinite;
+  animation: backgroundScroll 20s linear infinite;
+}
+
+#rectangle {
+
+}
+
+#number_list {
+  padding-top: 20px;
+  font-size: 16px;
+  height: 50px;
+  font-family: "Raleway";
+  text-align: left;
+  overflow: auto;
 }
 
 button {
@@ -33,14 +72,6 @@ button {
   transition: .3s;
   margin-right: 10px;
   text-decoration: none;
-}
-
-#toggleGraph {
-  width: 190px;
-}
-
-.graphline {
-  display: none;
 }
 
 button:focus, #startNumber:focus {outline:0;}
@@ -58,6 +89,14 @@ input[type=range]::-webkit-slider-runnable-track {
     border-radius: 3px;
 }
 
+#startNumber {
+  background-color: black;
+  color: white;
+  border: none;
+  padding: 2px;
+  font-family: "Lato";
+}
+
 .waveSelection {
     width: 30px;
     height: 30px;
@@ -70,13 +109,8 @@ input[type=range]::-webkit-slider-runnable-track {
 
 #controls {
   border-top: 2px solid gray;
-  padding-top: 20px;
-}
+  padding-top: 7px;
 
-.graphline {
-  fill: none;
-  stroke: steelblue;
-  stroke-width: 1.5px;
 }
 
 #about {
