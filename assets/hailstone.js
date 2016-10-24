@@ -1,56 +1,62 @@
 // to do:
-//make fucking zoom actually work
-// get zoom to follow the hailstone path roughly
-// maybe make width dependent on length of line being traveled?
+
+/*
+Make controls prettier
+clean up code and comment
+add x and y axis, x axis scaled to highest number in this list each time
+
+add additional graph view?
+*/
 
 (function() {
-  //Numbers I like the sound of:
-  //440
-  //10273
-  //20001
-  // 15234
-  //12331
-  //12778
-  //19587
+
   let startNum;
   let num;
   let ticked = true;
-
   let speed = 150;
   let release = .5;
   let waveType = "sine";
   let maxVolume = .04;
   let speedCoefficient = 75;
   let releaseCoefficient = 5;
-  let numberDiv = d3.select("#number_list");
   let svg_area;
   let stone;
-
-  let rHeight = 250;
   let width = window.innerWidth;
-  let height = window.innerHeight * 4 / 5;
+  let height = window.innerHeight * 4.5 / 5.5;
   let oldX = width / 2;
   let oldY = height / 2;
   let currentStart = [width/2, 1];
   let currentEnd = [0,0];
   let ratio;
   let maxVal;
+  let seqArray = [];
+  let context;
+  let path = d3.path();
+  let xScale;
+  let yScale;
+  let graph = false;
+  let lineDisplay = "block";
+  let graphDisplay = "none";
+
+  initialize();
 
   function createSvgArea() {
     //Add the svg area
     return d3.select("#graphic_area").append("svg")
         .attr("id", "svg_area")
         .attr("width", width + "px")
-        .attr("height", height + "px")
+        .attr("height", height + "px");
   }
 
   function createStone() {
     return d3.select("#svg_area").append("circle")
       .attr("id", "stone")
-      .attr("r", "5")
-      .attr("color", "black");
+      .attr("r", "8")
+      .attr("stroke", "black")
+      .attr("fill", "white");
   }
 
+  function initialize() {
     svg_area = createSvgArea();
     stone = createStone();
 
@@ -70,19 +76,37 @@
   $('#switch_sine').click(function() {switchTo('sine');})
   $('#switch_square').click(function() {switchTo('square');})
   $('#switch_triangle').click(function() {switchTo('triangle');})
+  $('#toggleGraph').click(function() {toggleGraph();})
+  stone.style("display", "none");
 
-  let zoom = d3.zoom()
-      .on('zoom', zoomed);
-  svg_area.call(zoom);
+  // initialize audio context
 
-  function zoomed() {
+  window.addEventListener('load', init, false);
 
   }
 
+  function toggleGraph() {
+    if (!graph) {
+      d3.selectAll('.hailstoneline').style("display", "none");
+      stone.style("display", "none");
+      d3.selectAll(".graphline").style("display", "block");
+      d3.select("#xaxis").style("display", "block");
+      lineDisplay = "none";
+      graphDisplay = "block";
+      graph = true;
+      d3.select('#toggleGraph').html("Toggle Hail View");
+    } else {
+      d3.selectAll('.hailstoneline').style("display", "block");
+      stone.style("display", "block");
+      d3.selectAll(".graphline").style("display", "none");
+      d3.select("#xaxis").style("display", "none");
+      lineDisplay = "block";
+      graphDisplay = "none";
+      graph = false;
+      d3.select('#toggleGraph').html("Toggle Graph View");
+    }
+  }
 
-  // initialize audio context
-  let context;
-  window.addEventListener('load', init, false);
   function init() {
     try {
       // Fix up for prefixing
@@ -121,7 +145,7 @@
         val /= 2;
       } else {
         val *= 3;
-        val += 1;
+        val++;
       }
       if (val > max) max = val;
     }
@@ -129,32 +153,77 @@
     return max;
   }
 
+  function lengthOfSequence(val) {
+    let length = 0
+    while (val != 1) {
+      if (val % 2 != 1) {
+        val /= 2;
+      } else {
+        val *= 3;
+        val += 1;
+      }
+      length++;
+    }
+
+    return length;
+  }
+
   // checks if number inputted > 0, is number, isn't stupid big
   function hailstoneHelper() {
     let val;
-    if (!isNaN($('#startNumber').val()) && $('#startNumber').val() > 0 && $('#startNumber').val() < 1000000) {
+    if ($('#startNumber').val() != null && $("#startNumber").val() < 10000000) {
       val = $('#startNumber').val();
       startNum = val;
       num = val
 
       maxVal = maxValOfSequence(val);
+      lengthOf = lengthOfSequence(val);
 
       ticked = !ticked;
-
-      numberDiv.text(val + "-> ");
       //call recursive method
       ratio = height / maxVal;
       currentStart = [width / 2, height - (val * ratio)];
       currentEnd = currentStart;
+
+      svg_area.selectAll(".axis").remove();
+
+      xScale = d3.scaleLinear()
+        .domain([0, lengthOf])
+        .range([0, width]);
+
+      yScale = d3.scaleLinear()
+        .domain([0, maxVal])
+        .range([height - 40, 0]);
+
+      svg_area.append("g")
+        .attr("class", "axis")
+        .call(d3.axisLeft(yScale).ticks(10))
+        .attr("transform", "translate(40,20)");
+
+      let xticks = (lengthOf > 30) ? lengthOf / 2 : lengthOf;
+
+      svg_area.append("g")
+        .attr("class", "axis")
+        .attr("id", "xaxis")
+        .call(d3.axisBottom(xScale).ticks(xticks))
+        .attr("transform", "translate(40," + (height - 20) + ")")
+        .style("display", function() {
+          if (graph) {
+            return "block";
+          } else {
+            return "none";
+          }
+        })
+
+      seqArray = [];
+      seqArray.push({index: 0, value: num});
+      stone.style("display", "block");
       hailstone();
-    } else {
-      $('#startNumber').val("Please enter a valid number!");
     }
   }
 
   //recursively runs through hailstone sequence based on startnumber and calls playSound for each frequency
   function hailstone() {
-    stone.style("display", "block");
     if (!ticked) {
       num = startNum;
       ticked = true;
@@ -177,53 +246,55 @@
       playSound(num, waveType);
     }
 
-      if (num % 2 != 1) {
-        num /= 2;
-        let newCoord = currentEnd[1] + (height - currentEnd[1]) / 2;
-        currentEnd = [Math.random() * width, newCoord];
-      } else {
-        num *= 3;
-        num += 1;
-        let newCoord = currentEnd[1] - (2 * (height - currentEnd[1]));
-        currentEnd = [Math.random() * width, newCoord];
-      }
+    // calculate new coordinate for stone and line
+    if (num % 2 != 1) {
+      num /= 2;
+      let newCoord = currentEnd[1] + (height - currentEnd[1]) / 2;
+      currentEnd = [width / 5 + Math.random() * 3*width /5 , newCoord];
+    } else {
+      num *= 3;
+      num++;
+      let newCoord = currentEnd[1] - (2 * (height - currentEnd[1]));
+      currentEnd = [width / 5 + Math.random() * 3*width / 5, newCoord];
+    }
 
-      let ndHtml = numberDiv.text();
-      ndHtml += num + ", ";
-      numberDiv.text(ndHtml);
+    seqArray.push({index: seqArray.length - 1, value: num});
 
+    svg_area.selectAll(".graphline").remove();
 
+    let gline = d3.line()
+			.x(function (d) { return xScale(d.index); })
+			.y(function (d) { return yScale(d.value); });
+
+    let path = svg_area.append("path")
+      .datum(seqArray)
+      .attr("class", "graphline")
+      .attr("d", gline)
+      .style("display", graphDisplay)
+      .attr("stroke-width", '1.25px')
+      .attr("transform", "translate(40,20)");
 
     stone.transition().duration(speed).attr("cx", currentEnd[0])
       .attr("cy", currentEnd[1]);
 
     svg_area.append("line")
+      .attr("class", "hailstoneline")
       .attr("x1", currentStart[0])
       .attr("y1", currentStart[1])
       .attr("x2", currentStart[0])
       .attr("y2", currentStart[1])
+      .attr("stroke", "black")
+      .attr("stroke-dasharray", "2,5")
+      .attr("stroke-width", "2px")
+      .style("display", lineDisplay)
       .transition()
       .duration(speed)
       .attr("x2", currentEnd[0])
       .attr("y2", currentEnd[1])
-      .attr("stroke", "black")
-      .attr("stroke-width", "2px")
       .transition()
       .duration(speed * 20)
       .style("opacity", 0);
 
-
-
-    d3.selectAll("line").each(function(d,i) {
-      let currentOpacity = d3.select(this).style("opacity");
-      if (currentOpacity < 1) {
-          d3.select(this).attr("stroke-dasharray", "5,5");
-      }
-    })
-
-  //  d3.selectAll("line").transition().duration(10).attr("transform", "translate(" + [10, 10] + ")");
-
-      //add zoom https://jsfiddle.net/2yx1cLrq/
       currentStart = currentEnd;
       if (num > 1) {
         window.setTimeout(hailstone, speed);
@@ -236,9 +307,8 @@
   function about() {
     if (d3.select("#about").style("display") == "none") {
       d3.select("#about").style("display", "block");
-      $("html, body").animate({ scrollTop: $(document).height() }, 500)
+      $("html, body").animate({ scrollTop: $(document).height() }, 800)
     } else {
-      backgroundAnimation();
       d3.select("#about").style("display", "none");
     }
   }
