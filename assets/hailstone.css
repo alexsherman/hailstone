@@ -1,5 +1,6 @@
 body {
   background-color: white;
+  overflow: hidden;
 }
 
 a {
@@ -10,11 +11,61 @@ a {
 a:hover {
 
 }
+
+.graphline {
+  stroke-width: 2px;
+  stroke: blue;
+  fill: none;
+}
+
+.axis {
+  stroke-width: 2px;
+  font-size: 10px;
+}
+
+.label {
+  font-family: "Raleway";
+}
+
+#stone {
+  z-index: 20;
+}
+
 #container {
   color: black;
   margin: 0 auto;
   text-align: center;
   font-family: "Raleway";
+}
+
+#intro {
+  width: 100vw;
+  height: 100vh;
+  z-index: 100;
+  text-align: center;
+  padding-top: 20vh;
+  font-family: "Raleway";
+}
+
+#initialNumber {
+  font-size: 60px;
+  text-align: center;
+  height: 150px;
+  font-family: "Raleway";
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0; /* Removes leftover margin */
+}
+
+#intro h1{
+  font-size: 40px;
+}
+
+#intro h2{
+  font-size: 30px;
 }
 
 #graphic_area {
@@ -65,23 +116,18 @@ input[type=range]::-webkit-slider-runnable-track {
     background-color: blue;
     border: none;
     color: white;
-    font-size: 10px;
+    font-size: 15px;
 }
 
 #controls {
-  border-top: 2px solid gray;
+  border-top: 2px solid blue;
   padding-top: 20px;
-}
-
-.graphline {
-  fill: none;
-  stroke: steelblue;
-  stroke-width: 1.5px;
+  font-size: 1.5vw;
 }
 
 #about {
   display: none;
-  font-size: 20px;
+  font-size: 1.5vw;
   font-family: "Raleway";
   margin: 50px;
 }

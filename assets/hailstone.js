@@ -44,8 +44,8 @@ add additional graph view?
     //Add the svg area
     return d3.select("#graphic_area").append("svg")
         .attr("id", "svg_area")
-        .attr("width", width + "px")
-        .attr("height", height + "px");
+        .attr("width", "100vw")
+        .attr("height", "90vh");
   }
 
   function createStone() {
@@ -53,7 +53,7 @@ add additional graph view?
       .attr("id", "stone")
       .attr("r", "8")
       .attr("stroke", "black")
-      .attr("fill", "white");
+      .attr("fill", "blue");
   }
 
   function initialize() {
@@ -79,9 +79,21 @@ add additional graph view?
   $('#toggleGraph').click(function() {toggleGraph();})
   stone.style("display", "none");
 
+
   // initialize audio context
 
   window.addEventListener('load', init, false);
+
+  $("#initialNumber").keypress(function(e) {
+    if (e.which == 13) {
+      if (!isNaN($("#initialNumber").val())) {
+        $("body").css("overflow", "visible");
+        $('#startNumber').val($("#initialNumber").val())
+        $("#intro").remove();
+        hailstoneHelper();
+      }
+    }
+    })
 
   }
 
@@ -91,6 +103,7 @@ add additional graph view?
       stone.style("display", "none");
       d3.selectAll(".graphline").style("display", "block");
       d3.select("#xaxis").style("display", "block");
+      d3.select("#xlabel").style("display", "block");
       lineDisplay = "none";
       graphDisplay = "block";
       graph = true;
@@ -100,6 +113,7 @@ add additional graph view?
       stone.style("display", "block");
       d3.selectAll(".graphline").style("display", "none");
       d3.select("#xaxis").style("display", "none");
+      d3.select("#xlabel").style("display", "none");
       lineDisplay = "block";
       graphDisplay = "none";
       graph = false;
@@ -171,7 +185,7 @@ add additional graph view?
   // checks if number inputted > 0, is number, isn't stupid big
   function hailstoneHelper() {
     let val;
-    if ($('#startNumber').val() != null && $("#startNumber").val() < 10000000) {
+    if ($('#startNumber').val() != null && $("#startNumber").val() < 10000000 && $("#startNumber").val() > 1) {
       val = $('#startNumber').val();
       startNum = val;
       num = val
@@ -185,7 +199,7 @@ add additional graph view?
       currentStart = [width / 2, height - (val * ratio)];
       currentEnd = currentStart;
 
-      svg_area.selectAll(".axis").remove();
+      svg_area.selectAll(".axis, .label").remove();
 
       xScale = d3.scaleLinear()
         .domain([0, lengthOf])
@@ -195,10 +209,30 @@ add additional graph view?
         .domain([0, maxVal])
         .range([height - 40, 0]);
 
+      svg_area.append("text")
+        .attr("class", "label")
+        .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+        .attr("transform", "translate(20, " + (height / 2) + ")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
+        .text("Frequency");
+
+        svg_area.append("text")
+          .attr("class", "label")
+          .attr("id", "xlabel")
+          .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+          .attr("transform", "translate(" + (width / 2) + ", " + (height + 20) + ")")  // text is drawn off the screen top left, move down and out and rotate
+          .text("Number in Sequence")
+          .style("display", function() {
+              if (graph) {
+                return "block";
+              } else {
+                return "none";
+              }
+            });
+
       svg_area.append("g")
         .attr("class", "axis")
         .call(d3.axisLeft(yScale).ticks(10))
-        .attr("transform", "translate(40,20)");
+        .attr("transform", "translate(60,20)");
 
       let xticks = (lengthOf > 30) ? lengthOf / 2 : lengthOf;
 
@@ -206,18 +240,25 @@ add additional graph view?
         .attr("class", "axis")
         .attr("id", "xaxis")
         .call(d3.axisBottom(xScale).ticks(xticks))
-        .attr("transform", "translate(40," + (height - 20) + ")")
+        .attr("transform", "translate(60," + (height - 20) + ")")
         .style("display", function() {
           if (graph) {
             return "block";
           } else {
             return "none";
           }
-        })
+        });
 
       seqArray = [];
       seqArray.push({index: 0, value: num});
-      stone.style("display", "block");
+      stone.style("display", function() {
+          if (graph) {
+            return "none";
+          } else {
+            return "block";
+          }
+        });
+      d3.selectAll(".hailstoneline").remove();
       hailstone();
     }
   }
@@ -271,8 +312,9 @@ add additional graph view?
       .attr("class", "graphline")
       .attr("d", gline)
       .style("display", graphDisplay)
+      .attr("stroke", "blue")
       .attr("stroke-width", '1.25px')
-      .attr("transform", "translate(40,20)");
+      .attr("transform", "translate(60,20)");
 
     stone.transition().duration(speed).attr("cx", currentEnd[0])
       .attr("cy", currentEnd[1]);
@@ -284,8 +326,7 @@ add additional graph view?
       .attr("x2", currentStart[0])
       .attr("y2", currentStart[1])
       .attr("stroke", "black")
-      .attr("stroke-dasharray", "2,5")
-      .attr("stroke-width", "2px")
+      .attr("stroke-width", "1px")
       .style("display", lineDisplay)
       .transition()
       .duration(speed)
